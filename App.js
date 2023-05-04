@@ -15,8 +15,13 @@ export default function App() {
   const [auctions, setAuctions] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
+  console.log("auctions", auctions);
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
+    setAuctions(prevAuctions =>
+      prevAuctions.sort((a, b) => 0.5 - Math.random())
+    );
     setTimeout(() => {
       setRefreshing(false);
     }, 2000);
@@ -53,8 +58,12 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+      {auctions.length === 0 && (
+        <View style={styles.notExistContainer}>
+          <Text style={styles.notExist}>아직 작품이 존재하지 않아요!</Text>
+        </View>
+      )}
       <ScrollView
-        horizontal
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -96,6 +105,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "orange",
+  },
+  notExistContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  notExist: {
+    fontSize: 30,
   },
   firstRow: {
     backgroundColor: "orange",
