@@ -1,11 +1,26 @@
-import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import EventSource from "react-native-sse";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function App() {
   const [auctions, setAuctions] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   useEffect(() => {
     const url = new URL("https://api.fleaauction.world/v2/sse/event");
@@ -40,27 +55,38 @@ export default function App() {
     <View style={styles.container}>
       <ScrollView
         horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.firstRow}>
-        {auctions.map(auction => (
-          <View id={auction.id} style={styles.firstRowItem}>
-            <Text style={styles.auctionId}>작품ID: {auction.auctionId}</Text>
-            <Text style={styles.viewCount}>조회수: {auction.viewCount}</Text>
-          </View>
-        ))}
-      </ScrollView>
-      <ScrollView
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.secondRow}>
-        {auctions.map(auction => (
-          <View id={auction.id} style={styles.firstRowItem}>
-            <Text style={styles.auctionId}>작품ID: {auction.auctionId}</Text>
-            <Text style={styles.viewCount}>조회수: {auction.viewCount}</Text>
-          </View>
-        ))}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            progressViewOffset={Math.floor(SCREEN_HEIGHT / 2)}
+          />
+        }
+        showsHorizontalScrollIndicator={false}>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.firstRow}>
+          {auctions.map(auction => (
+            <View id={auction.id} style={styles.firstRowItem}>
+              <Text style={styles.auctionId}>작품ID: {auction.auctionId}</Text>
+              <Text style={styles.viewCount}>조회수: {auction.viewCount}</Text>
+            </View>
+          ))}
+        </ScrollView>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.secondRow}>
+          {auctions.map(auction => (
+            <View id={auction.id} style={styles.firstRowItem}>
+              <Text style={styles.auctionId}>작품ID: {auction.auctionId}</Text>
+              <Text style={styles.viewCount}>조회수: {auction.viewCount}</Text>
+            </View>
+          ))}
+        </ScrollView>
       </ScrollView>
     </View>
   );
@@ -73,6 +99,7 @@ const styles = StyleSheet.create({
   },
   firstRow: {
     backgroundColor: "orange",
+    height: Math.floor(SCREEN_HEIGHT / 2),
   },
   firstRowItem: {
     width: Math.floor(SCREEN_WIDTH / 2),
@@ -89,6 +116,7 @@ const styles = StyleSheet.create({
   },
   secondRow: {
     backgroundColor: "teal",
+    height: Math.floor(SCREEN_HEIGHT / 2),
   },
   secondRowItem: {
     width: Math.floor(SCREEN_WIDTH / 2),
